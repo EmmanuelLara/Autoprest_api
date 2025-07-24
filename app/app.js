@@ -2,14 +2,17 @@ const express = require('express');
 const app = express();
 const usuarioRoutes = require('./routes/usuarioRoutes'); 
 
-// Middleware de Express
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json())
+// Parseo de body JSON y URL encoded
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-// Rutas de la API
-app.use('/api/usuarios', usuarioRoutes) // prefijo para rutas de usuarios
+// Servir archivos estáticos de la carpeta pública /uploads
+app.use('/uploads', express.static('public/uploads'));
 
-// Ruta base
+// Prefijo para las rutas de usuarios
+app.use('/api', usuarioRoutes);
+
+// Ruta base simple
 app.get('/', (req, res) => {
     res.json({ mensaje: 'API de AutoPrest funcionando 🚗' });
 });

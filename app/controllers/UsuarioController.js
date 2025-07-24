@@ -7,11 +7,15 @@ const ERROR_CREDENCIALES = 'Credenciales inválidas';
 const ERROR_SERVIDOR = 'Error en el servidor';
 
 // --- Función de validación separada ---
-function validarRegistro({ nombre, email, pass, rol }) {
+function validarRegistro({ nombre, telefono, email, pass, rol }) {
     const errores = [];
 
     if (!/^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre?.trim())) {
         errores.push('Nombre inválido: solo letras y espacios');
+    }
+
+    if (!/^[0-9]{10}$/.test(telefono)) {
+        errores.push('Teléfono inválido: deben ser 10 dígitos');
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.trim())) {
@@ -29,102 +33,87 @@ function validarRegistro({ nombre, email, pass, rol }) {
     return errores;
 }
 
-// --- Registro ---
-async function postRegistro(req, res) {
-    const { nombre, email, pass, rol } = req.body;
-    const errores = validarRegistro({ nombre, email, pass, rol });
+function generarToken(usuario) {
+    return jwt.sign(
+        { _id: usuario._id, rol: usuario.rol , nombre: usuario.nombre, telefono: usuario.telefono},
+        process.env.JWT_SECRET || 'secreto_jwt',
+        { expiresIn: '1h' }
+    );
+}
 
-    if (errores.length > 0) {
-        return res.status(400).json({
-            success: false,
-            errores,
-            detalles: { email: email?.trim(), pass: '***' }
-        });
-    }
+// --- Registro simplificado ---
+async function postRegistro(req, res) {
+    const { nombre, telefono, email, pass, rol } = req.body;
 
     try {
-        const emailLimpio = email.trim().toLowerCase();
-        const yaExiste = await Usuario.findOne({ email: emailLimpio });
-
-        if (yaExiste) {
-            return res.status(409).json({
-                success: false,
-                mensaje: 'El correo ya está registrado'
-            });
+        const existente = await Usuario.findOne({ email });
+        if (existente) {
+            return res.status(409).json({ mensaje: 'Correo ya registrado' });
         }
 
-        const passHasheada = await bcrypt.hash(pass, 12);
-
+        const passHash = await bcrypt.hash(pass, 10);
         const nuevoUsuario = await Usuario.create({
-            nombre: nombre.trim(),
-            email: emailLimpio,
-            pass: passHasheada,
-            rol: rol || 'cliente'
+            nombre, telefono, email, pass: passHash, rol: rol || 'cliente'
         });
 
         const token = generarToken(nuevoUsuario);
 
         res.status(201).json({
-            success: true,
+            mensaje: 'Registro exitoso',
             token,
             usuario: {
                 id: nuevoUsuario._id,
                 nombre: nuevoUsuario.nombre,
-                rol: nuevoUsuario.rol
+                rol: nuevoUsuario.rol,
+                telefono: nuevoUsuario.telefono,
+                email: nuevoUsuario.email
             }
         });
 
-    } catch (error) {
-        console.error('Error en registro:', error);
-        res.status(500).json({ success: false, mensaje: ERROR_SERVIDOR });
+    } catch (e) {
+        console.error('Error en registro', e);
+        res.status(500).json({ mensaje: 'Error del servidor' });
     }
 }
 
-// --- Login ---
+// --- Login simplificado ---
 async function postLogin(req, res) {
     const { email, pass } = req.body;
 
     try {
-        const emailLimpio = email?.trim().toLowerCase();
-        const usuario = await Usuario.findOne({ email: emailLimpio });
+        const usuario = await Usuario.findOne({ email });
+        if (!usuario) {
+            return res.status(401).json({ mensaje: 'Credenciales inválidas' });
+        }
 
-        if (!usuario || !(await bcrypt.compare(pass, usuario.pass))) {
-            return res.status(401).json({ success: false, mensaje: ERROR_CREDENCIALES });
+        const esValido = await bcrypt.compare(pass, usuario.pass);
+        if (!esValido) {
+            return res.status(401).json({ mensaje: 'Credenciales inválidas' });
         }
 
         const token = generarToken(usuario);
 
         res.status(200).json({
-            success: true,
+            mensaje: 'Login exitoso',
             token,
             usuario: {
                 id: usuario._id,
                 nombre: usuario.nombre,
-                rol: usuario.rol
+                rol: usuario.rol,
+                telefono: usuario.telefono,
+                email: usuario.email
             }
         });
 
-    } catch (error) {
-        console.error('Error en login:', error);
-        res.status(500).json({ success: false, mensaje: ERROR_SERVIDOR });
+    } catch (e) {
+        console.error('Error en login', e);
+        res.status(500).json({ mensaje: 'Error del servidor' });
     }
 }
 
-// --- Logout (simulado) ---
+// --- Logout simulado ---
 function logout(req, res) {
-    res.status(200).json({
-        success: true,
-        mensaje: 'Sesión cerrada. Elimina el token en el cliente.'
-    });
-}
-
-// --- Generador de Token JWT ---
-function generarToken(usuario) {
-    return jwt.sign(
-        { id: usuario._id, rol: usuario.rol },
-        process.env.JWT_SECRET || 'secreto_jwt',
-        { expiresIn: '1h' }
-    );
+    res.status(200).json({ mensaje: 'Token eliminado en cliente. Logout exitoso.' });
 }
 
 module.exports = {

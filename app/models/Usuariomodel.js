@@ -6,6 +6,11 @@ const UsuarioSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+      telefono: {
+        type: String,
+        required: true,
+        match: /^[0-9]{10}$/
+    },
     email: {
         type: String,
         required: true,
