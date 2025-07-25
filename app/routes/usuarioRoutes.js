@@ -6,10 +6,13 @@ const CompraController = require('../controllers/Compracontroller');
 const GerenteController = require('../controllers/GerenteController');
 const authMiddleware = require('../middlewares/auth');
 const subirImagen = require('../middlewares/subirImagen');
+const CatalogoController = require('../controllers/CatalogoController');
 
 // --- Rutas públicas ---
 router.post('/registro', UsuarioController.postRegistro);
 router.post('/login', UsuarioController.postLogin);
+router.get('/catalogo', CatalogoController.mostrarCatalogo);
+
 
 // --- Rutas protegidas ---
 router.post('/logout', authMiddleware.verificarToken, UsuarioController.logout);
