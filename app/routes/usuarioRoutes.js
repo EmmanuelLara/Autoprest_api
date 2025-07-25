@@ -3,16 +3,71 @@ const express = require('express');
 const router = express.Router();
 const UsuarioController = require('../controllers/UsuarioController');
 const CompraController = require('../controllers/Compracontroller');
+const GerenteController = require('../controllers/GerenteController');
 const authMiddleware = require('../middlewares/auth');
 const subirImagen = require('../middlewares/subirImagen');
 
-router.post('/registro', UsuarioController.postRegistro)
-      .post('/login', UsuarioController.postLogin)
-      .post('/logout', authMiddleware.verificarToken, UsuarioController.logout)
+// --- Rutas públicas ---
+router.post('/registro', UsuarioController.postRegistro);
+router.post('/login', UsuarioController.postLogin);
 
-router.post('/compras', authMiddleware.verificarToken, subirImagen.upload.single('Imagen'), CompraController.agregarCompra);
+// --- Rutas protegidas ---
+router.post('/logout', authMiddleware.verificarToken, UsuarioController.logout);
+
+// === Rutas para CLIENTE ===
+router.post(
+    '/cliente/compras',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('cliente'),
+    subirImagen.upload.single('Imagen'),
+    CompraController.agregarCompra
+)
+
+.get(
+    '/cliente/vehiculos',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('cliente'),
+    CompraController.buscarTodo
+)
+
+.get(
+    '/cliente/vehiculos/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('cliente'),
+    CompraController.buscarJoya,
+    CompraController.mostrandojoyas
+)
+
+// === Rutas para GERENTE ===
+router.get(
+    '/gerente/vehiculos/pendientes',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.obtenerPendientes
+)
+
+.put(
+    '/gerente/vehiculos/aprobar/:id',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.aprobarVehiculo
+)
+
+.delete(
+    '/gerente/vehiculos/rechazar/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.rechazarVehiculo
+)
 
 
+.get(
+    '/gerente/vehiculos/detalle/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.buscarVehiculo,
+    GerenteController.mostrarVehiculos
+);
 
 
 module.exports = router;
