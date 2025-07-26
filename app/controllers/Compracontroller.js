@@ -1,4 +1,4 @@
-// controllers/compraController.js
+
 const Compra = require('../models/Compramodel');
 
 function agregarCompra(req, res) {

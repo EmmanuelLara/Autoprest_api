@@ -9,6 +9,7 @@ const subirImagen = require('../middlewares/subirImagen');
 const CatalogoController = require('../controllers/CatalogoController');
 const ContactoController = require('../controllers/ContactoController');
 const ventascontroller = require('../controllers/VentaController');
+const adminController = require('../controllers/AdminController');
 
 // --- Rutas públicas ---
 router.post('/registro', UsuarioController.postRegistro);
@@ -86,6 +87,49 @@ router.get(
   authMiddleware.verificarRol('gerente'),
   ventascontroller.buscarventa,
   ventascontroller.mostrarventa
+);
+
+// === Rutas para ADMIN ===
+router.get(
+    '/usuarios',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('admin'),
+    adminController.obtenerUsuarios
+);
+
+// Registrar nuevo usuario
+router.post(
+    '/usuarios',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('admin'),
+    adminController.registrarUsuario
+);
+
+// Buscar un usuario por campo
+router.get(
+    '/usuarios/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('admin'),
+    adminController.buscarUsuario,
+    adminController.mostrarUsuarios
+);
+
+// Actualizar un usuario encontrado
+router.put(
+    '/usuarios/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('admin'),
+    adminController.buscarUsuario,
+    adminController.actualizarUsuario
+);
+
+// Eliminar un usuario encontrado
+router.delete(
+    '/usuarios/:key/:value',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('admin'),
+    adminController.buscarUsuario,
+    adminController.eliminarUsuario
 );
 
 

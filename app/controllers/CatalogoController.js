@@ -1,4 +1,4 @@
-// controllers/mostrarcontroller.js
+
 const Catalogo = require('../models/Catalogomodel');
 
 function mostrarCatalogo(req, res) {

@@ -1,5 +1,5 @@
 
-// controllers/ventaController.js
+
 const Catalogo = require('../models/Catalogomodel');
 const Venta = require('../models/Ventamodel');
 
@@ -50,7 +50,7 @@ function realizarVenta(req, res) {
 
             nuevaVenta.save()
                 .then(ventaGuardada => {
-                    // Cambiar estado y eliminar del catálogo
+                   
                     auto.estado = 'Vendido';
                     auto.save()
                         .then(() => {
