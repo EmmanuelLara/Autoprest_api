@@ -7,11 +7,13 @@ const GerenteController = require('../controllers/GerenteController');
 const authMiddleware = require('../middlewares/auth');
 const subirImagen = require('../middlewares/subirImagen');
 const CatalogoController = require('../controllers/CatalogoController');
+const ContactoController = require('../controllers/ContactoController');
 
 // --- Rutas públicas ---
 router.post('/registro', UsuarioController.postRegistro);
 router.post('/login', UsuarioController.postLogin);
 router.get('/catalogo', CatalogoController.mostrarCatalogo);
+router.post('/contacto' , ContactoController.agregarContacto);
 
 
 // --- Rutas protegidas ---
