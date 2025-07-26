@@ -8,6 +8,7 @@ const authMiddleware = require('../middlewares/auth');
 const subirImagen = require('../middlewares/subirImagen');
 const CatalogoController = require('../controllers/CatalogoController');
 const ContactoController = require('../controllers/ContactoController');
+const ventascontroller = require('../controllers/VentaController');
 
 // --- Rutas públicas ---
 router.post('/registro', UsuarioController.postRegistro);
@@ -72,7 +73,21 @@ router.get(
     authMiddleware.verificarRol('gerente'),
     GerenteController.buscarVehiculo,
     GerenteController.mostrarVehiculos
+)
+.post(
+    '/gerente/ventas/:id',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    ventascontroller.realizarVenta
+)
+.get(
+  '/gerente/ventas/:key/:value',
+  authMiddleware.verificarToken,
+  authMiddleware.verificarRol('gerente'),
+  ventascontroller.buscarventa,
+  ventascontroller.mostrarventa
 );
+
 
 
 module.exports = router;
