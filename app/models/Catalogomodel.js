@@ -12,7 +12,8 @@ const catalogoSchema = new mongoose.Schema({
     Kilometraje: Number,
     Color: String,
     Imagen: String,
-    Precio: Number,
+    Precio: Number, // Precio original propuesto por el vendedor
+    PrecioVenta: Number, // Precio final con comisión
     Descripcion: String,
     Accesorios: [String]
 }, {

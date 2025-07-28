@@ -22,24 +22,32 @@ function aprobarVehiculo(req, res) {
 
             vehiculo.Estado = 'aprobado';
             return vehiculo.save().then(() => {
-                const nuevoCatalogo = new Catalogo({
-                    Marca: vehiculo.Marca,
-                    Modelo: vehiculo.Modelo,
-                    Anio: vehiculo.Anio,
-                    Tipo: vehiculo.Tipo,
-                    Condicion: vehiculo.Condicion,
-                    Transmision: vehiculo.Transmision,
-                    Combustible: vehiculo.Combustible,
-                    Kilometraje: vehiculo.Kilometraje,
-                    Color: vehiculo.Color,
-                    Imagen: vehiculo.Imagen,
-                    Precio: vehiculo.Precio,
-                    Descripcion: vehiculo.Descripcion,
-                    Accesorios: vehiculo.Accesorios
-                });
+             const comision = vehiculo.Precio * 0.15;
+const precioConComision = vehiculo.Precio + comision;
+
+const nuevoCatalogo = new Catalogo({
+    Marca: vehiculo.Marca,
+    Modelo: vehiculo.Modelo,
+    Anio: vehiculo.Anio,
+    Tipo: vehiculo.Tipo,
+    Condicion: vehiculo.Condicion,
+    Transmision: vehiculo.Transmision,
+    Combustible: vehiculo.Combustible,
+    Kilometraje: vehiculo.Kilometraje,
+    Color: vehiculo.Color,
+    Imagen: vehiculo.Imagen,
+    Precio: vehiculo.Precio, // original
+    PrecioVenta: precioConComision, // con comisión incluida
+    Descripcion: vehiculo.Descripcion,
+    Accesorios: vehiculo.Accesorios
+});
+
 
                 return nuevoCatalogo.save().then(() =>
-                    res.status(200).json({ success: true, message: 'Vehículo aprobado y agregado al catálogo' })
+                    res.status(200).json({ 
+                        success: true, 
+                        message: 'Vehículo aprobado y agregado al catálogo con comisión'
+                    })
                 );
             });
         })
