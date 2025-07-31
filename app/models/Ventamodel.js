@@ -23,6 +23,7 @@ const VentaSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    VIN :String,
     Marca: String,
     Modelo: String,
     Anio: Number,

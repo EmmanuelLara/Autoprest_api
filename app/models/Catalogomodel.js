@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const catalogoSchema = new mongoose.Schema({
+    VIN : String, // VIN del vehículo
     Marca: String,
     Modelo: String,
     Anio: Number,

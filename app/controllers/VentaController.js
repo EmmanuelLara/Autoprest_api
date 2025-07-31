@@ -5,13 +5,17 @@ const Venta = require('../models/Ventamodel');
 
 // Registrar una venta
 function realizarVenta(req, res) {
-    const vehiculo_id = req.params.id || req.body.vehiculo_id;
+    const key = req.params.key;
+    const value = req.params.value;
 
-    if (!vehiculo_id) {
-        return res.status(400).json({ mensaje: 'ID del vehículo requerido' });
+    if (!key || !value) {
+        return res.status(400).json({ mensaje: 'Parámetro de búsqueda inválido' });
     }
 
-    Catalogo.findById(vehiculo_id)
+    const query = {};
+    query[key] = value;
+
+    Catalogo.findOne(query)
         .then(auto => {
             if (!auto) {
                 return res.status(404).json({ mensaje: 'Vehículo no encontrado' });
@@ -26,6 +30,7 @@ function realizarVenta(req, res) {
 
             const nuevaVenta = new Venta({
                 vehiculo_id: auto._id,
+                VIN: auto.VIN,
                 comprador_nombre,
                 comprador_apellidos,
                 comprador_telefono,
@@ -50,7 +55,6 @@ function realizarVenta(req, res) {
 
             nuevaVenta.save()
                 .then(ventaGuardada => {
-                   
                     auto.estado = 'Vendido';
                     auto.save()
                         .then(() => {
@@ -89,6 +93,7 @@ function realizarVenta(req, res) {
             });
         });
 }
+
 
 // Obtener un vehículo por ID (si lo necesitas en la app)function buscarventa(req, res, next) {
 function buscarventa(req, res, next) {

@@ -12,9 +12,12 @@ function obtenerPendientes(req, res) {
 
 // Aprobar un vehículo
 function aprobarVehiculo(req, res) {
-    const { id } = req.params;
+    const { key, value } = req.params;
 
-    Compra.findById(id)
+    const query = {};
+    query[key] = value;
+
+    Compra.findOne(query)
         .then(vehiculo => {
             if (!vehiculo) {
                 return res.status(404).json({ success: false, message: 'Vehículo no encontrado' });
@@ -22,60 +25,56 @@ function aprobarVehiculo(req, res) {
 
             vehiculo.Estado = 'aprobado';
             return vehiculo.save().then(() => {
-             const comision = vehiculo.Precio * 0.15;
-const precioConComision = vehiculo.Precio + comision;
+                const comision = vehiculo.Precio * 0.15;
+                const precioConComision = vehiculo.Precio + comision;
 
-const nuevoCatalogo = new Catalogo({
-    Marca: vehiculo.Marca,
-    Modelo: vehiculo.Modelo,
-    Anio: vehiculo.Anio,
-    Tipo: vehiculo.Tipo,
-    Condicion: vehiculo.Condicion,
-    Transmision: vehiculo.Transmision,
-    Combustible: vehiculo.Combustible,
-    Kilometraje: vehiculo.Kilometraje,
-    Color: vehiculo.Color,
-    Imagen: vehiculo.Imagen,
-    Precio: vehiculo.Precio, // original
-    PrecioVenta: precioConComision, // con comisión incluida
-    Descripcion: vehiculo.Descripcion,
-    Accesorios: vehiculo.Accesorios
-});
+                const nuevoCatalogo = new Catalogo({
+                    VIN: vehiculo.VIN, // Asegúrate de que el modelo Compra tenga el campo VIN
+                    Marca: vehiculo.Marca,
+                    Modelo: vehiculo.Modelo,
+                    Anio: vehiculo.Anio,
+                    Tipo: vehiculo.Tipo,
+                    Condicion: vehiculo.Condicion,
+                    Transmision: vehiculo.Transmision,
+                    Combustible: vehiculo.Combustible,
+                    Kilometraje: vehiculo.Kilometraje,
+                    Color: vehiculo.Color,
+                    Imagen: vehiculo.Imagen,
+                    Precio: vehiculo.Precio,
+                    PrecioVenta: precioConComision,
+                    Descripcion: vehiculo.Descripcion,
+                    Accesorios: vehiculo.Accesorios
+                });
 
-
-                return nuevoCatalogo.save().then(() =>
+                return nuevoCatalogo.save().then(() => {
                     res.status(200).json({ 
                         success: true, 
-                        message: 'Vehículo aprobado y agregado al catálogo con comisión'
-                    })
-                );
+                        message: 'Vehículo aprobado y agregado al catálogo con comisión' 
+                    });
+                });
             });
         })
         .catch(error => {
             console.error(error);
-            res.status(500).json({ success: false, message: 'No se pudo aprobar y enviar al catálogo' });
+            res.status(500).json({ success: false, message: 'Error al aprobar el vehículo' });
         });
 }
 
-// Rechazar vehículo por ID o por otro campo
+
+// RECHAZAR vehículo por cualquier campo (ej. VIN)
 function rechazarVehiculo(req, res) {
-    let vehiculoPromise;
+    const { key, value } = req.params;
 
-    if (req.params.id) {
-        vehiculoPromise = Compra.findById(req.params.id);
-    } else if (req.params.key && req.params.value) {
-        const query = {};
-        query[req.params.key] = req.params.value;
-        vehiculoPromise = Compra.findOne(query);
-    }
+    const query = {};
+    query[key] = value;
 
-    vehiculoPromise
+    Compra.findOne(query)
         .then(vehiculo => {
             if (!vehiculo) {
                 return res.status(404).json({ success: false, message: 'Vehículo no encontrado' });
             }
 
-            // Eliminar imagen
+            // Eliminar imagen del servidor
             const nombreArchivo = vehiculo.Imagen?.split('/').pop();
             if (nombreArchivo) {
                 const rutaImagen = path.join(__dirname, '..', 'public', 'uploads', nombreArchivo);
@@ -84,7 +83,7 @@ function rechazarVehiculo(req, res) {
                 }
             }
 
-            // Eliminar documento
+            // Eliminar documento de MongoDB
             return Compra.deleteOne({ _id: vehiculo._id }).then(() =>
                 res.status(200).json({ success: true, message: 'Vehículo rechazado y eliminado junto con su imagen' })
             );
@@ -94,7 +93,6 @@ function rechazarVehiculo(req, res) {
             res.status(500).json({ success: false, message: 'No se pudo rechazar/eliminar el vehículo' });
         });
 }
-
 // Buscar vehículo por campo dinámico (como middleware)
 function buscarVehiculo(req, res, next) {
     const consulta = {};
@@ -128,10 +126,26 @@ function mostrarVehiculos(req, res) {
     return res.status(200).json({ success: true, vehiculos });
 }
 
+// Mostrar todos los vehículos sin filtros
+function mostrarTodosVehiculos(req, res) {
+    Compra.find({})
+        .then(vehiculos => {
+            if (!vehiculos || vehiculos.length === 0) {
+                return res.status(204).json({ success: true, message: 'No hay vehículos que mostrar' });
+            }
+            return res.status(200).json({ success: true, vehiculos });
+        })
+        .catch(error => {
+            console.error('Error al obtener todos los vehículos:', error);
+            res.status(500).json({ success: false, message: 'Error al obtener todos los vehículos' });
+        });
+}
+
 module.exports = {
     obtenerPendientes,
     aprobarVehiculo,
     rechazarVehiculo,
     buscarVehiculo,
-    mostrarVehiculos
+    mostrarVehiculos,
+    mostrarTodosVehiculos
 };

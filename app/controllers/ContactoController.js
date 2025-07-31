@@ -18,8 +18,23 @@ function agregarContacto(req, res) {
             });
         });
 }
+function mostrarContacto(req, res) {
+    contacto.find()
+        .then(contactos => {
+            res.status(200).json({
+                mensaje: 'Contactos obtenidos correctamente',
+                contactos
+            });
+        })
+        .catch(error => {
+            res.status(404).json({
+                mensaje: `Error al obtener contactos: ${error.message}`
+            });
+        });
+}
 module.exports = {
     agregarContacto
+    , mostrarContacto
 };
 
 

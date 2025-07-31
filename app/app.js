@@ -10,7 +10,7 @@ app.use(express.json());
 app.use('/uploads', express.static('public/uploads'));
 
 // Prefijo para las rutas de usuarios
-app.use('/api', router);
+app.use('/', router);
 
 
 app.get('/', (req, res) => {

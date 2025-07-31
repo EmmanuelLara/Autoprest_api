@@ -11,6 +11,14 @@ const compraSchema = new mongoose.Schema({
         required: true,
         match: /^\d{10,20}$/ 
     },
+    VIN: {
+    type: String,
+    required: true,
+    unique: true,
+    uppercase: true,
+    match: /^[A-HJ-NPR-Z0-9]{17}$/, // patrón estándar VIN
+},
+
     Marca: {
         type: String,
         required: true,

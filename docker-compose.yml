@@ -1,0 +1,28 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: .
+    container_name: autoprest_api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - DB=mongodb://mongo:27017/Autoprest
+      - PORT=3000
+      - JWT_SECRET=tu_clave_secreta_super_segura_2024
+      - JWT_EXPIRES_IN=24h
+      - NODE_ENV=development
+
+volumes:
+  mongo_data:

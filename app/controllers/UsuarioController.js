@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuariomodel');
+const config = require('../config/configuracion');
 
 const ERROR_CREDENCIALES = 'Credenciales inválidas';
 const ERROR_SERVIDOR = 'Error en el servidor';
@@ -35,8 +36,8 @@ function validarRegistro({ nombre, telefono, email, pass, rol }) {
 function generarToken(usuario) {
     return jwt.sign(
         { _id: usuario._id, rol: usuario.rol, nombre: usuario.nombre, telefono: usuario.telefono },
-        process.env.JWT_SECRET || 'secreto_jwt',
-        { expiresIn: '1h' }
+        config.JWT_SECRET,
+        { expiresIn: config.JWT_EXPIRES_IN }
     );
 }
 
@@ -70,7 +71,7 @@ function postRegistro(req, res) {
                         mensaje: 'Registro exitoso',
                         token,
                         usuario: {
-                            id: nuevoUsuario._id,
+                            usuarioId: nuevoUsuario._id,
                             nombre: nuevoUsuario.nombre,
                             rol: nuevoUsuario.rol,
                             telefono: nuevoUsuario.telefono,
@@ -105,7 +106,7 @@ function postLogin(req, res) {
                         mensaje: 'Login exitoso',
                         token,
                         usuario: {
-                            id: usuario._id,
+                            usuarioId: usuario._id,
                             nombre: usuario.nombre,
                             rol: usuario.rol,
                             telefono: usuario.telefono,

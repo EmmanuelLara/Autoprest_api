@@ -47,7 +47,7 @@ function buscarTodo(req, res) {
         });
 }
 
-function buscarJoya(req, res, next) {
+function buscarVehiculo(req, res, next) {
     const consulta = {};
     consulta[req.params.key] = req.params.value;
 
@@ -64,7 +64,7 @@ function buscarJoya(req, res, next) {
         });
 }
 
-function mostrandojoyas(req, res) {
+function mostrarVehiculos(req, res) {
     if (req.body.e) {
         return res.status(404).send({ mensaje: `Error al buscar la información: ${req.body.e}` });
     }
@@ -77,6 +77,6 @@ function mostrandojoyas(req, res) {
 module.exports = {
     agregarCompra,
     buscarTodo,
-    buscarJoya,
-    mostrandojoyas
+    buscarVehiculo,
+    mostrarVehiculos
 };

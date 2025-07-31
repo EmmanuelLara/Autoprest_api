@@ -16,6 +16,7 @@ router.post('/registro', UsuarioController.postRegistro);
 router.post('/login', UsuarioController.postLogin);
 router.get('/catalogo', CatalogoController.mostrarCatalogo);
 router.post('/contacto' , ContactoController.agregarContacto);
+router.get('/contacto', ContactoController.mostrarContacto);
 
 
 // --- Rutas protegidas ---
@@ -41,8 +42,8 @@ router.post(
     '/cliente/vehiculos/:key/:value',
     authMiddleware.verificarToken,
     authMiddleware.verificarRol('cliente'),
-    CompraController.buscarJoya,
-    CompraController.mostrandojoyas
+    CompraController.buscarVehiculo,
+    CompraController.mostrarVehiculos
 )
 
 // === Rutas para GERENTE ===
@@ -54,7 +55,7 @@ router.get(
 )
 
 .put(
-    '/gerente/vehiculos/aprobar/:id',
+    '/gerente/vehiculos/aprobar/:key/:value',
     authMiddleware.verificarToken,
     authMiddleware.verificarRol('gerente'),
     GerenteController.aprobarVehiculo
@@ -66,7 +67,20 @@ router.get(
     authMiddleware.verificarRol('gerente'),
     GerenteController.rechazarVehiculo
 )
+.get(
+    '/gerente/vehiculos',   
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.buscarVehiculo,
+    GerenteController.mostrarVehiculos
+)
 
+.get(
+    '/gerente/vehiculos/detalle',
+    authMiddleware.verificarToken,
+    authMiddleware.verificarRol('gerente'),
+    GerenteController.mostrarTodosVehiculos
+)
 
 .get(
     '/gerente/vehiculos/detalle/:key/:value',
@@ -76,7 +90,7 @@ router.get(
     GerenteController.mostrarVehiculos
 )
 .post(
-    '/gerente/ventas/:id',
+    '/gerente/ventas/:key/:value',
     authMiddleware.verificarToken,
     authMiddleware.verificarRol('gerente'),
     ventascontroller.realizarVenta
