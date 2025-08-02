@@ -21,4 +21,5 @@ function mostrarCatalogo(req, res) {
 
 module.exports = {
     mostrarCatalogo
+   
 };
