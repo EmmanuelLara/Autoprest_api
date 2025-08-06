@@ -10,6 +10,7 @@ const CatalogoController = require('../controllers/CatalogoController');
 const ContactoController = require('../controllers/ContactoController');
 const ventascontroller = require('../controllers/VentaController');
 const adminController = require('../controllers/AdminController');
+const { get } = require('mongoose');
 
 // --- Rutas públicas ---
 router.post('/registro', UsuarioController.postRegistro);
@@ -101,7 +102,14 @@ router.get(
   authMiddleware.verificarRol('gerente'),
   ventascontroller.buscarventa,
   ventascontroller.mostrarventa
-);
+)
+.get(
+    '/gerente/ventas',
+    authMiddleware.verificarToken, 
+    authMiddleware.verificarRol('gerente'),
+    ventascontroller.buscarTodo
+)
+
 
 // === Rutas para ADMIN ===
 router.get(

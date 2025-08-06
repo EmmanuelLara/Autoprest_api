@@ -94,7 +94,15 @@ function realizarVenta(req, res) {
         });
 }
 
-
+function buscarTodo(req, res) {
+    Venta.find({})
+        .then(ventas => {
+            res.json({ ventas });
+        })
+        .catch(e => {
+            res.status(500).json({ error: 'Error al obtener ventas', detalle: e.message });
+        });
+}
 // Obtener un vehículo por ID (si lo necesitas en la app)function buscarventa(req, res, next) {
 function buscarventa(req, res, next) {
     const consulta = {};
@@ -127,5 +135,6 @@ function mostrarventa(req, res) {
 module.exports = {
     realizarVenta,
     buscarventa,
-    mostrarventa
+    mostrarventa,
+    buscarTodo
 };
