@@ -1,0 +1,63 @@
+        <script>
+            window.onload = function() {
+                // Configuración personalizada de Swagger UI
+                const ui = SwaggerUIBundle({
+                    url: 'https://e949ecceb86b.ngrok-free.app/swagger.json',
+                    dom_id: '#swagger-ui',
+                    deepLinking: true,
+                    presets: [
+                        SwaggerUIBundle.presets.apis,
+                        SwaggerUIStandalonePreset
+                    ],
+                    plugins: [
+                        SwaggerUIBundle.plugins.DownloadUrl
+                    ],
+                    layout: "StandaloneLayout",
+                    // Configurar interceptores para manejar URLs
+                    requestInterceptor: function(request) {
+                        try {
+                            var publicOrigin = window.location.origin;
+
+                            // Reescribir localhost a la URL pública actual
+                            if (request.url && (request.url.indexOf('http://localhost') === 0 || request.url.indexOf('https://localhost') === 0)) {
+                                request.url = request.url.replace(/^https?:\/\/localhost:\\d+/, publicOrigin);
+                            }
+
+                            // Si la URL es relativa, anteponer el origen público
+                            if (request.url && request.url.indexOf('/') === 0) {
+                                request.url = publicOrigin + request.url;
+                            }
+
+                            // Forzar https
+                            if (request.url && request.url.indexOf('http://') === 0) {
+                                request.url = request.url.replace('http://', 'https://');
+                            }
+                        } catch (e) {
+                            // noop
+                        }
+
+                        if (!request.headers) {
+                            request.headers = {};
+                        }
+                        request.headers['Content-Type'] = 'application/json';
+                        return request;
+                    },
+                    // Configurar el servidor por defecto
+                    servers: [
+                        {
+                            url: 'https://e949ecceb86b.ngrok-free.app',
+                            description: '🌐 Servidor público (ngrok) - RECOMENDADO'
+                        }
+                    ],
+                    // Configuraciones adicionales para mejorar la compatibilidad
+                    supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                    validatorUrl: null,
+                    onComplete: function() {
+                        console.log('Swagger UI cargado completamente');
+                    },
+                    onFailure: function(data) {
+                        console.error('Error al cargar Swagger UI:', data);
+                    }
+                });
+            };
+        </script>

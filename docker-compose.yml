@@ -1,28 +1,78 @@
-services:
-  mongo:
-    image: mongo:7
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+# Docker Compose file for AutoPrest API
+# Removed version as it's obsolete in newer versions
 
+services:
+  # Base de datos MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: autoprest_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: autoprest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - autoprest_network
+
+  # API AutoPrest
   api:
     build: .
     container_name: autoprest_api
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    depends_on:
-      - mongo
-    volumes:
-      - .:/app
-      - /app/node_modules
     environment:
-      - DB=mongodb://mongo:27017/Autoprest
+      - NODE_ENV=production
       - PORT=3000
-      - JWT_SECRET=tu_clave_secreta_super_segura_2024
+      - DB=mongodb://admin:password123@mongodb:27017/autoprest?authSource=admin
+      - JWT_SECRET=tu_secreto_jwt_super_seguro_para_produccion_2024
       - JWT_EXPIRES_IN=24h
-      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    volumes:
+      - ./app/public/uploads:/app/app/public/uploads
+    networks:
+      - autoprest_network
+
+  # Nginx para proxy reverso (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: autoprest_nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    networks:
+      - autoprest_network
+
+  # Ngrok para exposición pública temporal
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: autoprest_ngrok
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - NGROK_REGION=us
+    command: http api:3000 --log=stdout --log-level=info
+    depends_on:
+      - api
+    networks:
+      - autoprest_network
 
 volumes:
-  mongo_data:
+  mongodb_data:
+    driver: local
+
+networks:
+  autoprest_network:
+    driver: bridge

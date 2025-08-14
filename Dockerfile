@@ -1,20 +1,27 @@
-# Dockerfile
-FROM node:18
+# Usar Node.js 18 como imagen base
+FROM node:18-alpine
 
-# Crear directorio de trabajo dentro del contenedor
+# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar package.json y package-lock.json para instalar dependencias
+# Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias del proyecto
-RUN npm install
+# Instalar dependencias
+RUN npm ci --only=production
 
-# Copiar el resto de los archivos al contenedor
+# Copiar código de la aplicación
 COPY . .
 
-# Exponer el puerto (ajústalo si usas otro)
+# Crear directorio para uploads si no existe
+RUN mkdir -p app/public/uploads
+
+# Exponer puerto
 EXPOSE 3000
 
-# Comando para iniciar el servidor
-CMD ["npm", "run", "dev"]
+# Variables de entorno por defecto
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Comando para ejecutar la aplicación
+CMD ["npm", "start"]

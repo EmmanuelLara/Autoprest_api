@@ -10,6 +10,69 @@ function agregarCompra(req, res) {
         return res.status(400).json({ mensaje: 'Imagen requerida' });
     }
 
+    // Validar que todos los campos requeridos estén presentes
+    const camposRequeridos = ['VIN', 'Marca', 'Modelo', 'Anio', 'Tipo', 'Condicion', 'Transmision', 'Combustible', 'Kilometraje', 'Color', 'Precio', 'Descripcion', 'Accesorios'];
+    const camposFaltantes = camposRequeridos.filter(campo => !req.body[campo] || req.body[campo].toString().trim() === '');
+    
+    if (camposFaltantes.length > 0) {
+        return res.status(400).json({ 
+            mensaje: 'Campos requeridos faltantes', 
+            camposFaltantes: camposFaltantes 
+        });
+    }
+
+    // Validar caracteres especiales en campos de texto
+    const caracteresInvalidos = /[%&$#@!*()_+\-=\[\]{};':"\\|.<>\/?]/;
+    const camposTexto = ['Marca', 'Modelo', 'Tipo', 'Condicion', 'Transmision', 'Combustible', 'Color'];
+    const camposDescriptivos = ['Descripcion', 'Accesorios'];
+    
+    // Validar campos de texto normales
+    for (const campo of camposTexto) {
+        if (req.body[campo] && caracteresInvalidos.test(req.body[campo])) {
+            return res.status(400).json({
+                mensaje: 'Datos inválidos',
+                error: `El campo ${campo} no puede contener caracteres especiales como %&$#@!*()_+-=[]{};':"\\|.<>/?`
+            });
+        }
+    }
+    
+    // Validar campos descriptivos (permiten comas, acentos, puntos, guiones, paréntesis)
+    for (const campo of camposDescriptivos) {
+        if (req.body[campo] && !/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-()]+$/.test(req.body[campo])) {
+            return res.status(400).json({
+                mensaje: 'Datos inválidos',
+                error: `El campo ${campo} solo puede contener letras, números, espacios, comas, puntos, guiones y paréntesis`
+            });
+        }
+    }
+
+    // Validar que el año sea un número válido
+    const anio = parseInt(req.body.Anio);
+    if (isNaN(anio) || anio < 1900 || anio > new Date().getFullYear() + 1) {
+        return res.status(400).json({
+            mensaje: 'Datos inválidos',
+            error: 'El año debe ser un número válido entre 1900 y ' + (new Date().getFullYear() + 1)
+        });
+    }
+
+    // Validar que el kilometraje sea un número válido
+    const kilometraje = parseInt(req.body.Kilometraje);
+    if (isNaN(kilometraje) || kilometraje < 0) {
+        return res.status(400).json({
+            mensaje: 'Datos inválidos',
+            error: 'El kilometraje debe ser un número válido mayor o igual a 0'
+        });
+    }
+
+    // Validar que el precio sea un número válido
+    const precio = parseFloat(req.body.Precio);
+    if (isNaN(precio) || precio <= 0) {
+        return res.status(400).json({
+            mensaje: 'Datos inválidos',
+            error: 'El precio debe ser un número válido mayor a 0'
+        });
+    }
+
     const rutaImagen = `/uploads/${req.file.filename}`;
 
     const nuevaCompra = new Compra({
@@ -34,49 +97,8 @@ function agregarCompra(req, res) {
         });
 }
 
-function buscarTodo(req, res) {
-    Compra.find({})
-        .then(compras => {
-            if (compras.length) {
-                return res.status(200).send({ Compra: compras });
-            }
-            return res.status(204).send({ mensaje: 'No hay nada que mostrar' });
-        })
-        .catch(e => {
-            return res.status(404).send({ mensaje: `Error al consultar la información: ${e}` });
-        });
-}
 
-function buscarVehiculo(req, res, next) {
-    const consulta = {};
-    consulta[req.params.key] = req.params.value;
-
-    Compra.find(consulta)
-        .then(compras => {
-            req.body = req.body || {};
-            req.body.Compra = compras || [];
-            return next();
-        })
-        .catch(e => {
-            req.body = req.body || {};
-            req.body.e = e;
-            return next();
-        });
-}
-
-function mostrarVehiculos(req, res) {
-    if (req.body.e) {
-        return res.status(404).send({ mensaje: `Error al buscar la información: ${req.body.e}` });
-    }
-    if (!req.body.Compra || !req.body.Compra.length) {
-        return res.status(204).send({ mensaje: 'No hay nada que mostrar' });
-    }
-    return res.status(200).send({ Compra: req.body.Compra });
-}
 
 module.exports = {
-    agregarCompra,
-    buscarTodo,
-    buscarVehiculo,
-    mostrarVehiculos
+    agregarCompra
 };

@@ -1,0 +1,19 @@
+# Configuración de Ngrok para exposición pública temporal
+# 
+# INSTRUCCIONES:
+# 1. Ve a https://ngrok.com/ y crea una cuenta gratuita
+# 2. Obtén tu authtoken desde el dashboard
+# 3. Reemplaza "tu_token_de_ngrok_aqui" con tu token real
+# 4. Guarda este archivo como .env (o copia las variables a tu sistema)
+
+# Configuración de Ngrok
+NGROK_AUTHTOKEN=tu_token_de_ngrok_aqui
+
+# Configuración de la base de datos
+MONGO_USERNAME=admin
+MONGO_PASSWORD=password123
+MONGO_DATABASE=autoprest
+
+# Configuración JWT
+JWT_SECRET=tu_secreto_jwt_super_seguro_para_produccion_2024
+JWT_EXPIRES_IN=24h

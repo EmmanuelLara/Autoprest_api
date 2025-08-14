@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPrest API - Documentación Pública</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin:0;
+            background: #fafafa;
+        }
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui .info .title { color: #2c3e50; }
+        .swagger-ui .scheme-container { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            // Configuración personalizada de Swagger UI
+            const ui = SwaggerUIBundle({
+                url: 'https://d599f64f9dd2.ngrok-free.app/swagger.json',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                // Forzar el uso de la URL pública
+                requestInterceptor: function(request) {
+                    // Reemplazar cualquier URL de localhost con la URL pública
+                    if (request.url && request.url.includes('localhost')) {
+                        request.url = request.url.replace(/http:\/\/localhost:\d+/, 'https://d599f64f9dd2.ngrok-free.app');
+                    }
+                    return request;
+                },
+                // Configurar el servidor por defecto
+                servers: [
+                    {
+                        url: 'https://d599f64f9dd2.ngrok-free.app',
+                        description: '🌐 Servidor público (ngrok) - RECOMENDADO'
+                    }
+                ]
+            });
+        };
+    </script>
+</body>
+</html>

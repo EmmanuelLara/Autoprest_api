@@ -14,14 +14,23 @@ function obtenerPendientes(req, res) {
 function aprobarVehiculo(req, res) {
     const { key, value } = req.params;
 
+    // Limpiar los parámetros de espacios y caracteres especiales
+    const cleanKey = key.trim();
+    const cleanValue = value.trim();
+
     const query = {};
-    query[key] = value;
+    query[cleanKey] = cleanValue;
+
+    console.log('Búsqueda de vehículo para aprobar:', { key: cleanKey, value: cleanValue, query });
 
     Compra.findOne(query)
         .then(vehiculo => {
             if (!vehiculo) {
+                console.log('Vehículo no encontrado con query:', query);
                 return res.status(404).json({ success: false, message: 'Vehículo no encontrado' });
             }
+
+            console.log('Vehículo encontrado para aprobar:', vehiculo.VIN);
 
             vehiculo.Estado = 'aprobado';
             return vehiculo.save().then(() => {
@@ -65,14 +74,31 @@ function aprobarVehiculo(req, res) {
 function rechazarVehiculo(req, res) {
     const { key, value } = req.params;
 
-    const query = {};
-    query[key] = value;
+    // Limpiar los parámetros de espacios y caracteres especiales
+    const cleanKey = key.trim();
+    const cleanValue = value.trim();
 
-    Compra.findOne(query)
+    const query = {};
+    query[cleanKey] = cleanValue;
+
+    console.log('Búsqueda de vehículo:', { key: cleanKey, value: cleanValue, query });
+    console.log('Parámetros originales:', { key: req.params.key, value: req.params.value });
+
+    // Primero, buscar todos los vehículos para depurar
+    Compra.find({})
+        .then(todosVehiculos => {
+            console.log('Todos los vehículos en BD:', todosVehiculos.map(v => ({ VIN: v.VIN, Marca: v.Marca, Modelo: v.Modelo })));
+            
+            // Ahora buscar el vehículo específico
+            return Compra.findOne(query);
+        })
         .then(vehiculo => {
             if (!vehiculo) {
+                console.log('Vehículo no encontrado con query:', query);
                 return res.status(404).json({ success: false, message: 'Vehículo no encontrado' });
             }
+
+            console.log('Vehículo encontrado:', vehiculo.VIN);
 
             // Eliminar imagen del servidor
             const nombreArchivo = vehiculo.Imagen?.split('/').pop();
@@ -95,8 +121,14 @@ function rechazarVehiculo(req, res) {
 }
 // Buscar vehículo por campo dinámico (como middleware)
 function buscarVehiculo(req, res, next) {
+    // Limpiar los parámetros de espacios y caracteres especiales
+    const cleanKey = req.params.key.trim();
+    const cleanValue = req.params.value.trim();
+
     const consulta = {};
-    consulta[req.params.key] = req.params.value;
+    consulta[cleanKey] = cleanValue;
+
+    console.log('Búsqueda de vehículos:', { key: cleanKey, value: cleanValue, query: consulta });
 
     Compra.find(consulta)
         .then(vehiculos => {
@@ -120,7 +152,13 @@ function mostrarVehiculos(req, res) {
     }
 
     if (!vehiculos || vehiculos.length === 0) {
-        return res.status(204).json({ success: true, message: 'No hay vehículos que mostrar' });
+        // Si estamos buscando un vehículo específico (endpoint con parámetros), devolver 404
+        // Si estamos listando vehículos en general, devolver 204
+        if (req.params.key && req.params.value) {
+            return res.status(404).json({ success: false, message: 'Vehículo no encontrado' });
+        } else {
+            return res.status(204).json({ success: true, message: 'No hay vehículos que mostrar' });
+        }
     }
 
     return res.status(200).json({ success: true, vehiculos });
@@ -140,6 +178,8 @@ function mostrarTodosVehiculos(req, res) {
             res.status(500).json({ success: false, message: 'Error al obtener todos los vehículos' });
         });
 }
+
+
 
 module.exports = {
     obtenerPendientes,

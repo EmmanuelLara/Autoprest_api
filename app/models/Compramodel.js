@@ -4,7 +4,14 @@ const compraSchema = new mongoose.Schema({
     NombreVendedor: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'El nombre no puede contener caracteres especiales'
+        }
     },
     TelefonoVendedor: {
         type: String,
@@ -12,22 +19,35 @@ const compraSchema = new mongoose.Schema({
         match: /^\d{10,20}$/ 
     },
     VIN: {
-    type: String,
-    required: true,
-    unique: true,
-    uppercase: true,
-    match: /^[A-HJ-NPR-Z0-9]{17}$/, // patrón estándar VIN
-},
-
+        type: String,
+        required: true,
+        unique: true,
+        uppercase: true,
+        match: /^[A-HJ-NPR-Z0-9]{17}$/, // patrón estándar VIN
+    },
     Marca: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'La marca no puede contener caracteres especiales'
+        }
     },
     Modelo: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-]+$/, // Letras, números, espacios, guiones
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'El modelo no puede contener caracteres especiales'
+        }
     },
     Anio: {
         type: Number,
@@ -38,22 +58,50 @@ const compraSchema = new mongoose.Schema({
     Tipo: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'El tipo no puede contener caracteres especiales'
+        }
     },
     Condicion: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'La condición no puede contener caracteres especiales'
+        }
     },
     Transmision: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'La transmisión no puede contener caracteres especiales'
+        }
     },
     Combustible: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'El combustible no puede contener caracteres especiales'
+        }
     },
     Kilometraje: {
         type: Number,
@@ -63,7 +111,14 @@ const compraSchema = new mongoose.Schema({
     Color: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        match: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, // Solo letras, espacios y acentos
+        validate: {
+            validator: function(v) {
+                return !/[%&$#@!*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+            },
+            message: 'El color no puede contener caracteres especiales'
+        }
     },
     Imagen: {
         type: String,
@@ -76,15 +131,31 @@ const compraSchema = new mongoose.Schema({
     },
     Descripcion: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                // Permitir letras, números, espacios, comas, puntos, acentos y algunos caracteres básicos
+                return /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-()]+$/.test(v);
+            },
+            message: 'La descripción solo puede contener letras, números, espacios, comas, puntos, guiones y paréntesis'
+        }
     },
     Accesorios: {
         type: String,
-        default: ''
+        required: true,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                // Permitir letras, números, espacios, comas, puntos, acentos y algunos caracteres básicos
+                return /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s,.\-()]+$/.test(v);
+            },
+            message: 'Los accesorios solo pueden contener letras, números, espacios, comas, puntos, guiones y paréntesis'
+        }
     },
     Estado: {
         type: String,
-        enum: ['pendiente', 'aprobado', 'rechazado'],
+        enum: ['pendiente', 'aprobado', 'rechazado', 'vendido'],
         default: 'pendiente'
     },
     UsuarioID: {

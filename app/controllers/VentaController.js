@@ -2,6 +2,7 @@
 
 const Catalogo = require('../models/Catalogomodel');
 const Venta = require('../models/Ventamodel');
+const Compra = require('../models/Compramodel');
 
 // Registrar una venta
 function realizarVenta(req, res) {
@@ -27,6 +28,20 @@ function realizarVenta(req, res) {
                 comprador_telefono,
                 comprador_correo
             } = req.body;
+
+            // Validar que todos los campos requeridos estén presentes
+            if (!comprador_nombre || !comprador_apellidos || !comprador_telefono || !comprador_correo) {
+                return res.status(400).json({
+                    mensaje: 'Faltan campos requeridos del comprador',
+                    campos_requeridos: {
+                        comprador_nombre: 'Nombre del comprador',
+                        comprador_apellidos: 'Apellidos del comprador',
+                        comprador_telefono: 'Teléfono del comprador',
+                        comprador_correo: 'Correo electrónico del comprador'
+                    },
+                    campos_enviados: req.body
+                });
+            }
 
             const nuevaVenta = new Venta({
                 vehiculo_id: auto._id,
@@ -55,22 +70,26 @@ function realizarVenta(req, res) {
 
             nuevaVenta.save()
                 .then(ventaGuardada => {
+                    // Actualizar estado en catálogo
                     auto.estado = 'Vendido';
                     auto.save()
                         .then(() => {
-                            auto.deleteOne()
-                                .then(() => {
-                                    res.status(201).json({
-                                        mensaje: 'Venta registrada exitosamente',
-                                        venta: ventaGuardada
-                                    });
-                                })
-                                .catch(err => {
-                                    res.status(500).json({
-                                        mensaje: 'Error al eliminar vehículo del catálogo',
-                                        error: err.message
-                                    });
-                                });
+                            // Actualizar estado en tabla de compras
+                            return Compra.findOneAndUpdate(
+                                { VIN: auto.VIN },
+                                { Estado: 'vendido' },
+                                { new: true }
+                            );
+                        })
+                        .then(() => {
+                            // Eliminar del catálogo
+                            return auto.deleteOne();
+                        })
+                        .then(() => {
+                            res.status(201).json({
+                                mensaje: 'Venta registrada exitosamente',
+                                venta: ventaGuardada
+                            });
                         })
                         .catch(err => {
                             res.status(500).json({
@@ -80,9 +99,11 @@ function realizarVenta(req, res) {
                         });
                 })
                 .catch(err => {
+                    console.error('Error al guardar venta:', err);
                     res.status(500).json({
                         mensaje: 'Error al guardar venta',
-                        error: err.message
+                        error: err.message,
+                        detalles: 'Verifica que todos los campos requeridos estén presentes y sean válidos'
                     });
                 });
         })
@@ -105,16 +126,23 @@ function buscarTodo(req, res) {
 }
 // Obtener un vehículo por ID (si lo necesitas en la app)function buscarventa(req, res, next) {
 function buscarventa(req, res, next) {
+    const key = req.params.key.trim();
+    const value = req.params.value.trim();
+    
+    console.log('Buscando venta con:', { key, value });
+    
     const consulta = {};
-    consulta[req.params.key] = req.params.value;
+    consulta[key] = value;
 
     Venta.find(consulta)
         .then(ventas => {
+            console.log('Ventas encontradas:', ventas.length);
             req.body = req.body || {};
             req.body.ventas = ventas || [];
             return next();
         })
         .catch(e => {
+            console.error('Error al buscar venta:', e);
             req.body = req.body || {};
             req.body.e = e;
             return next();
@@ -126,7 +154,13 @@ function mostrarventa(req, res) {
         return res.status(404).send({ mensaje: `Error al buscar la información: ${req.body.e}` });
     }
     if (!req.body.ventas || !req.body.ventas.length) {
-        return res.status(204).send({ mensaje: 'No hay ventas que mostrar' });
+        // Si estamos buscando una venta específica (endpoint con parámetros), devolver 404
+        // Si estamos listando ventas en general, devolver 204
+        if (req.params.key && req.params.value) {
+            return res.status(404).send({ mensaje: 'Venta no encontrada' });
+        } else {
+            return res.status(204).send({ mensaje: 'No hay ventas que mostrar' });
+        }
     }
     return res.status(200).send({ ventas: req.body.ventas });
 }
